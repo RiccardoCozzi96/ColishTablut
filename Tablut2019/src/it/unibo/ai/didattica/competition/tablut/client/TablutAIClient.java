@@ -11,7 +11,7 @@ import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
 /**
  * 
- * @author A. Liscio, R. Cozzi
+ * @author A. Piretti, Andrea Galassi
  *
  */
 public class TablutAIClient extends TablutClient {
@@ -56,7 +56,7 @@ public class TablutAIClient extends TablutClient {
 		}
 		System.out.println("Selected client: " + args[0]);
 
-		TablutAIClient client = new TablutAIClient(role, name, gametype);
+		TablutRandomClient client = new TablutRandomClient(role, name, gametype);
 		client.run();
 	}
 
@@ -118,8 +118,9 @@ public class TablutAIClient extends TablutClient {
 			}
 
 			if (this.getPlayer().equals(Turn.WHITE)) {
-				// � il mio turno
+				// è il mio turno
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
+					/*
 					int[] buf;
 					for (int i = 0; i < state.getBoard().length; i++) {
 						for (int j = 0; j < state.getBoard().length; j++) {
@@ -129,11 +130,11 @@ public class TablutAIClient extends TablutClient {
 								buf[0] = i;
 								buf[1] = j;
 								pawns.add(buf);
-//							} else if (state.getPawn(i, j).equalsPawn(State.Pawn.EMPTY.toString())) {
-//								buf = new int[2];
-//								buf[0] = i;
-//								buf[1] = j;
-//								empty.add(buf);
+							} else if (state.getPawn(i, j).equalsPawn(State.Pawn.EMPTY.toString())) {
+								buf = new int[2];
+								buf[0] = i;
+								buf[1] = j;
+								empty.add(buf);
 							}
 						}
 					}
@@ -149,60 +150,16 @@ public class TablutAIClient extends TablutClient {
 						e1.printStackTrace();
 					}
 					while (!found) {
-						// for each pawn of your color, try all possible actions
-						for (int i = 0; i < pawns.size(); i++) {
-							selected = pawns.get(i);
-							List<int[]> eligibles = new ArrayList<int[]>();
-							//TODO controllare se la mossa è vantaggiosa
-							for (int column = selected[0]; column >= 0; column-- ) {
-								if (state.getPawn(column, selected[1]).equalsPawn(State.Pawn.EMPTY.toString())) {
-									// aggiungi alla lista di mosse possibili
-									buf = new int[2];
-									buf[0] = column;
-									buf[1] = selected[1];
-									eligibles.add(buf);
-								} else {
-									break;
-								}
-							}
-							for (int column = selected[0]; column <= 8; column++ ) {
-								if (state.getPawn(column, selected[1]).equalsPawn(State.Pawn.EMPTY.toString())) {
-									// aggiungi alla lista di mosse possibili
-									buf = new int[2];
-									buf[0] = column;
-									buf[1] = selected[1];
-									eligibles.add(buf);
-								} else {
-									break;
-								}
-							}
-							for (int row = selected[1]; row >= 0; row-- ) {
-								if (state.getPawn(selected[0], row).equalsPawn(State.Pawn.EMPTY.toString())) {
-									// aggiungi alla lista di mosse possibili
-									buf = new int[2];
-									buf[0] = selected[0];
-									buf[1] = row;
-									eligibles.add(buf);
-								} else {
-									break;
-								}
-							}
-							for (int row = selected[1]; row <= 8; row++ ) {
-								if (state.getPawn(selected[0], row).equalsPawn(State.Pawn.EMPTY.toString())) {
-									// aggiungi alla lista di mosse possibili
-									buf = new int[2];
-									buf[0] = selected[0];
-									buf[1] = row;
-									eligibles.add(buf);
-								} else {
-									break;
-								}
-							}
-							
+						if (pawns.size() > 1) {
+							selected = pawns.get(new Random().nextInt(pawns.size() - 1));
+						} else {
+							selected = pawns.get(0);
 						}
 
-						String from = "best options from";
-						String to = "best options to";
+						String from = this.getCurrentState().getBox(selected[0], selected[1]);
+
+						selected = empty.get(new Random().nextInt(empty.size() - 1));
+						String to = this.getCurrentState().getBox(selected[0], selected[1]);
 
 						try {
 							a = new Action(from, to, State.Turn.WHITE);
@@ -219,7 +176,7 @@ public class TablutAIClient extends TablutClient {
 						}
 
 					}
-
+					
 					System.out.println("Mossa scelta: " + a.toString());
 					try {
 						this.write(a);
@@ -229,9 +186,10 @@ public class TablutAIClient extends TablutClient {
 					}
 					pawns.clear();
 					empty.clear();
-
+				 */
+					
 				}
-				// il turno dell'avversario
+				// è il turno dell'avversario
 				else if (state.getTurn().equals(StateTablut.Turn.BLACK)) {
 					System.out.println("Waiting for your opponent move... ");
 				}
@@ -253,7 +211,7 @@ public class TablutAIClient extends TablutClient {
 
 			} else {
 
-				// il mio turno
+				// è il mio turno
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
 					int[] buf;
 					for (int i = 0; i < state.getBoard().length; i++) {
