@@ -9,6 +9,16 @@ import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
+import it.unibo.ai.didattica.competition.tablut.exceptions.ActionException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.BoardException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.CitadelException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.ClimbingCitadelException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.ClimbingException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.DiagonalException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.OccupitedException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.PawnException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.StopException;
+import it.unibo.ai.didattica.competition.tablut.exceptions.ThroneException;
 
 public class MiniMax {
 
@@ -21,6 +31,7 @@ public class MiniMax {
 	private Game game;
 	private Turn player;
 	private Integer maxDepth = 3;
+	private LinkedList<Action> eligibleActions;
 
 	/**
 	 * 
@@ -31,35 +42,38 @@ public class MiniMax {
 		super();
 		this.game = game;
 		this.player = player;
+		this.eligibleActions = new LinkedList<Action>();
 	}
 
 
-	public State minimaxDecision(State state) {
+	public Action minimaxDecision(State state) {
+		this.eligibleActions.clear();
 		Integer depth = 0;
-		LinkedList<State> successors = successors(state);
+		LinkedList<State> successors = successors(state, true);
 		int max = Integer.MIN_VALUE;
-		State bestMove = null;
+		int bestMoveIndex = -1;
 		int v;
-
+		int counter = 0;
 		for (State s : successors) {
 			v = minValue(s, depth -1);
-			
+
 			if (v > max) {
 				max = v;
-				bestMove = s;
+				bestMoveIndex = counter;
 			}
+			counter ++;
 		}
 		System.out.println("max: " + max);
-		return bestMove;
+		return this.eligibleActions.get(bestMoveIndex);
 
 	}
 
 	public int maxValue(State state, Integer depth) {
 		depth = depth + 1;
-		if (terminalTest(state) || depth == maxDepth) return utility(state);
+		if (terminalTest(state) || depth == maxDepth) return utility(state) - depth;
 		int v = Integer.MIN_VALUE;
 
-		for (State s : successors(state)) 			
+		for (State s : successors(state, false)) 			
 			v = Math.max(v, minValue(s, depth));
 
 		return v;
@@ -67,10 +81,10 @@ public class MiniMax {
 
 	public int minValue(State state, Integer depth) {
 		depth = depth + 1;
-		if (terminalTest(state) || depth == maxDepth) return utility(state);
+		if (terminalTest(state) || depth == maxDepth) return utility(state) - depth;
 		int v = Integer.MAX_VALUE;
 
-		for (State s : successors(state)) 
+		for (State s : successors(state, false)) 
 			v = Math.min(v, maxValue(s, depth));
 
 		return v;
@@ -136,7 +150,7 @@ public class MiniMax {
 	 * @param game
 	 * @return List of all the possible next states for a player
 	 */
-	public LinkedList<State> successors(State state) {
+	public LinkedList<State> successors(State state, boolean firstLevel) {
 
 		LinkedList<State> elegibiles = new LinkedList<>();
 		if (!terminalTest(state)) {
@@ -164,8 +178,11 @@ public class MiniMax {
 
 						for (String to:toTry) {
 							try {
-								elegibiles.add(game.checkMove(state.clone(), new Action(from, to, state.getTurn())).clone());
-							} catch (Exception e) { /*System.out.println("\tNO"); */}
+								Action a = new Action(from, to, state.getTurn());
+								elegibiles.add(game.checkMove(state.clone(), a));
+								if (firstLevel)
+									eligibleActions.add(a);
+							} catch (Exception e) { }
 						}
 					} 
 		}
@@ -173,11 +190,16 @@ public class MiniMax {
 	}
 
 
+
+
+
 	public static void main(String args[]) {
 		Game game = new GameAshtonTablut(99, 0, "garbage", "fake", "fake");
 		MiniMax m = new MiniMax(game, Turn.WHITE);
+		MiniMax m2 = new MiniMax(game, Turn.BLACK);
 
-		State s0 = new StateTablut(), s1;
+		State s0 = new StateTablut(), s1 = null, s2 = null, s3 = null;
+		Action a1, a2, a3;
 		s0.setTurn(Turn.WHITE);
 
 		System.out.println("*" +s0.getTurn());
@@ -198,12 +220,42 @@ public class MiniMax {
 		//s0.getBoard()[8][6] = Pawn.BLACK; // LUI MANGIA in 2 mosse
 
 
+		System.out.println("Stato 0" + s0);
+		try {
+			a1 = m.minimaxDecision(s0); 
+			s1 = game.checkMove(s0, a1);
+			
+			
+			a2 = m2.minimaxDecision(s1); 
+			s2 = game.checkMove(s1, a2);
 
-		s1 = m.minimaxDecision(s0);
-		System.out.println(s0);
-		System.out.println(s1);
+			a3 = m.minimaxDecision(s2); 
+			s3 = game.checkMove(s2, a3);
 
+			
+			
+			System.out.println(s0 + "Azione 1: " + a1);
+			
+			System.out.println("Stato 1" + s1);
+			
+			System.out.println(s1 + "Azione 2: " + a2);
+			System.out.println("Stato 2" + s2);
+			
+			System.out.println(s2 + "Azione 3: " + a3);
+			System.out.println("Stato 3" + s3);
 
+			
+			
+			
+			
+			
+			
+		} catch (BoardException | ActionException | StopException | PawnException | DiagonalException
+				| ClimbingException | ThroneException | OccupitedException | ClimbingCitadelException
+				| CitadelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
