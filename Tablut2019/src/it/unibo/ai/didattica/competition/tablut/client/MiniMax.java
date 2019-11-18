@@ -42,7 +42,7 @@ public class MiniMax {
 		int v;
 
 		for (State s : successors) {
-			v = maxValue(s, depth -1);
+			v = minValue(s, depth -1);
 			
 			if (v > max) {
 				max = v;
