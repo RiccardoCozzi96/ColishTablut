@@ -10,7 +10,7 @@ public class TablutAIBlackClient {
 		if (args.length>0){
 			array = new String[]{"BLACK", args[0]};
 		}
-		TablutRandomClient.main(array);
+		TablutAIClient.main(array);
 	}
 
 }

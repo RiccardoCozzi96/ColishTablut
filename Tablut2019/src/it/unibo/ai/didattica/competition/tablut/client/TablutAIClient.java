@@ -3,9 +3,6 @@ package it.unibo.ai.didattica.competition.tablut.client;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import it.unibo.ai.didattica.competition.tablut.domain.*;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
@@ -161,9 +158,7 @@ public class TablutAIClient extends TablutClient {
 					Action a = null;
 
 					a = minimax.minimaxDecision(getCurrentState());
-					
-					JFrame f = new JFrame();
-					f.setVisible(true);
+	
 
 					System.out.println("Mossa scelta: " + a.toString());
 					try {
