@@ -33,7 +33,8 @@ public class MiniMax {
 
 	public  int maxUtility = 0;
 	private Game game;
-	private Turn AIColor;
+	private String AIColor;
+	private String OpColor;
 	private Integer maxDepth = 2;
 	private LinkedList<Action> eligibleActions;
 	
@@ -49,13 +50,15 @@ public class MiniMax {
 	public MiniMax(Game game, Turn player) {
 		super();
 		this.game = game;
-		this.AIColor = player;
+		this.AIColor = player.toString();
 		if (player.equals(Turn.WHITE)) {
 			AIPawns = INITW;
 			opponentPawns = INITB;
+			OpColor = Turn.BLACK.toString();
 		} else {
 			AIPawns = INITB;
 			opponentPawns = INITW;
+			OpColor = Turn.WHITE.toString();
 		}
 		this.eligibleActions = new LinkedList<Action>();
 	}
@@ -64,6 +67,7 @@ public class MiniMax {
 	public Action minimaxDecision(State state) {
 		LocalTime start = LocalTime.now();
 
+		updatePawns(state);
 		this.eligibleActions.clear();
 		Integer depth = 0;
 		LinkedList<State> successors = successors(state, true);
@@ -82,7 +86,7 @@ public class MiniMax {
 		}
 		//System.out.println("max: " + max);
 		LocalTime end = LocalTime.now();
-		System.out.println("\n\n\n___________\nmossa in circa : " + ((end.toSecondOfDay() - start.toSecondOfDay())) + " secondi");
+		System.out.println("\n\n\n___________\nmossa in circa : " + ((end.toSecondOfDay() - start.toSecondOfDay())) + " secondi" + " con valore: " + max);
 		return this.eligibleActions.get(bestMoveIndex);
 
 	}
@@ -128,7 +132,7 @@ public class MiniMax {
 	 */
 	public int utility(State state) {
 		String turn = state.getTurn().toString();
-		if (AIColor.equals(Turn.BLACK)) {
+		if (AIColor.equals(Turn.BLACK.toString())) {
 			if (turn.equals(Turn.BLACKWIN.toString())) {
 				return WIN;
 			}
@@ -137,7 +141,7 @@ public class MiniMax {
 			}
 		}
 
-		if (AIColor.equals(Turn.WHITE)) {
+		if (AIColor.equals(Turn.WHITE.toString())) {
 			if (turn.equals(Turn.WHITEWIN.toString())) {
 				return WIN;
 			}
@@ -157,7 +161,7 @@ public class MiniMax {
 		int capturedPawns;
 		int count = countNPawns(state);
 		
-		if (state.getTurn().equals(AIColor)){
+		if (state.getTurn().toString().equals(AIColor)){
 			capturedPawns = opponentPawns - count;
 		} else {
 			capturedPawns = (-1)*(AIPawns - count);
@@ -180,6 +184,22 @@ public class MiniMax {
 				if (board[row][col].toString().equals(opponent))
 					count++;
 		return count;
+	}
+	
+	public void updatePawns(State state) {
+		Pawn[][] board = state.getBoard();
+		int countAI = 0;
+		int countOp = 0;
+		int dim = board.length;
+		for (int row = 0; row < dim; row++)
+			for (int col = 0; col < dim; col++) {
+				if (board[row][col].toString().equals(AIColor))
+					countAI++;
+				if (board[row][col].toString().equals(OpColor))
+					countOp++;
+			}
+		this.AIPawns = countAI;
+		this.opponentPawns = countOp;
 	}
 
 
@@ -285,44 +305,35 @@ public class MiniMax {
 		//		s0.getBoard()[8][5] = Pawn.WHITE; // LUI MANGIA in 2 mosse
 		//		s0.getBoard()[6][4] = Pawn.BLACK;
 
-		//s0.getBoard()[2][4] = Pawn.BLACK;
+		s0.getBoard()[3][3] = Pawn.BLACK;
 		s0.getBoard()[5][3] = Pawn.BLACK;
 		s0.getBoard()[4][4] = Pawn.KING;
-		//s0.getBoard()[8][6] = Pawn.BLACK; // LUI MANGIA in 2 mosse
+		s0.getBoard()[6][3] = Pawn.WHITE;
+		s0.getBoard()[2][3] = Pawn.WHITE;
+
 		
 		System.out.println("Stato 0" + s0);
 		try {
 			
-			LocalTime start = LocalTime.now();
-
 			a1 = m.minimaxDecision(s0); 
 			s1 = game.checkMove(s0, a1);
 
 
-			a2 = m2.minimaxDecision(s1); 
-			s2 = game.checkMove(s1, a2);
-
-			a3 = m.minimaxDecision(s2); 
-			s3 = game.checkMove(s2, a3);
-
-
-			System.out.println(s0 + "Azione 1: " + a1);
-
-			System.out.println("Stato 1" + s1);
-
-			System.out.println(s1 + "Azione 2: " + a2);
-			System.out.println("Stato 2" + s2);
-
-			System.out.println(s2 + "Azione 3: " + a3);
-			System.out.println("Stato 3" + s3);
-			LocalTime end = LocalTime.now();
-
-			
-			System.out.println("\n\n\n___________\nCirca : " + ((end.toSecondOfDay() - start.toSecondOfDay())) + " secondi");
+//			a2 = m2.minimaxDecision(s1); 
+//			s2 = game.checkMove(s1, a2);
+//
+//			a3 = m.minimaxDecision(s2); 
+//			s3 = game.checkMove(s2, a3);
 
 
+			System.out.println(s0 + "\nAzione 1: " + a1);
+			System.out.println("Stato 1\n" + s1);
 
-
+//			System.out.println(s1 + "Azione 2: " + a2);
+//			System.out.println("Stato 2" + s2);
+//
+//			System.out.println(s2 + "Azione 3: " + a3);
+//			System.out.println("Stato 3" + s3);
 
 		} catch (BoardException | ActionException | StopException | PawnException | DiagonalException
 				| ClimbingException | ThroneException | OccupitedException | ClimbingCitadelException
