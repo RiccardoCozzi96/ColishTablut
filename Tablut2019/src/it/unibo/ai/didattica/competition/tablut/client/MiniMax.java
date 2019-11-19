@@ -27,12 +27,19 @@ public class MiniMax {
 	public static final int LOOSE = -3;
 	public static final int DRAW = -1;
 	public static final int NEUTRAL = 0;
+	
+	public static final int INITB = 16;
+	public static final int INITW = 8;
 
 	public  int maxUtility = 0;
 	private Game game;
-	private Turn player;
+	private Turn AIColor;
 	private Integer maxDepth = 2;
 	private LinkedList<Action> eligibleActions;
+	
+
+	private int AIPawns = 0;
+	private int opponentPawns = 0;
 
 	/**
 	 * 
@@ -42,7 +49,14 @@ public class MiniMax {
 	public MiniMax(Game game, Turn player) {
 		super();
 		this.game = game;
-		this.player = player;
+		this.AIColor = player;
+		if (player.equals(Turn.WHITE)) {
+			AIPawns = INITW;
+			opponentPawns = INITB;
+		} else {
+			AIPawns = INITB;
+			opponentPawns = INITW;
+		}
 		this.eligibleActions = new LinkedList<Action>();
 	}
 
@@ -81,7 +95,7 @@ public class MiniMax {
 		for (State s : successors(state, false)) 			
 			v = Math.max(v, minValue(s, depth));
 
-		return v;
+		return v + countCapturedPawns(state);
 	}
 
 	public int minValue(State state, Integer depth) {
@@ -92,7 +106,7 @@ public class MiniMax {
 		for (State s : successors(state, false)) 
 			v = Math.min(v, maxValue(s, depth));
 
-		return v;
+		return v + countCapturedPawns(state);
 	}
 
 	public boolean terminalTest(State state) {
@@ -113,32 +127,60 @@ public class MiniMax {
 	 * @return
 	 */
 	public int utility(State state) {
-		if (player.equals(Turn.BLACK)) {
-			if (state.getTurn().equals(Turn.BLACKWIN)) {
+		String turn = state.getTurn().toString();
+		if (AIColor.equals(Turn.BLACK)) {
+			if (turn.equals(Turn.BLACKWIN.toString())) {
 				return WIN;
 			}
-			if (state.getTurn().equals(Turn.WHITEWIN)) {
+			if (turn.equals(Turn.WHITEWIN.toString())) {
 				return LOOSE;
 			}
 		}
 
-		if (player.equals(Turn.WHITE)) {
-			if (state.getTurn().equals(Turn.WHITEWIN)) {
+		if (AIColor.equals(Turn.WHITE)) {
+			if (turn.equals(Turn.WHITEWIN.toString())) {
 				return WIN;
 			}
-			if (state.getTurn().equals(Turn.BLACKWIN)) {
+			if (turn.equals(Turn.BLACKWIN.toString())) {
 				return LOOSE;
 			}
 		}
 
-		if (state.getTurn().equals(Turn.DRAW)) {
+		if (turn.equals(Turn.DRAW.toString())) {
 			return DRAW;
 		}
-
+		
 		return NEUTRAL;
 	}
 
+	public int countCapturedPawns(State state) {
+		int capturedPawns;
+		int count = countNPawns(state);
+		
+		if (state.getTurn().equals(AIColor)){
+			capturedPawns = opponentPawns - count;
+		} else {
+			capturedPawns = (-1)*(AIPawns - count);
+		}
+		return capturedPawns;
+	}
+	
+	public int countNPawns(State state) {
+		Pawn[][] board = state.getBoard();
+		String turn = state.getTurn().toString();
+		String opponent;
+		int count = 0;
 
+		if (turn.equals(Turn.WHITE.toString())) opponent = Turn.BLACK.toString();
+		else opponent = Turn.WHITE.toString();
+
+		int dim = board.length;
+		for (int row = 0; row < dim; row++)
+			for (int col = 0; col < dim; col++) 
+				if (board[row][col].toString().equals(opponent))
+					count++;
+		return count;
+	}
 
 
 
